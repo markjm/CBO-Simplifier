@@ -17,14 +17,8 @@ def split_sentences(text):
 
 def get_dollar_contexts(url):
     """
-    Retrieves the given CBO page, and returns a list of contexts with dollar
+    Retrieves the given CBO page, and returns a list of sentences with dollar
     figures in them.
-
-    Each context is a 3-tuple: (left, budget, right)
-
-    - left is a list of words preceding the budget figure
-    - budget is the dollar figure
-    - right is a list of words after the budget figure
     """
     with urlopen(url) as page:
         soup = BeautifulSoup(page.read(), 'html.parser')
