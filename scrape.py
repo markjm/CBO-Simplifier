@@ -8,6 +8,8 @@ from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
 
+REGEX = re.compile(r'(\w+\W){0,10}(\$[0-9,]+(\.[0-9]+)?)\W(billion|million|thousand)+\Wover\Wthe\W[0-9]+-[0-9]+\Wperiod')
+
 def split_sentences(text):
     """
     Splits a paragraph into words, splitting on sentence and word delimiters.
@@ -28,11 +30,8 @@ def get_dollar_contexts(url):
 
     for paragraph in article_pars:
         paragraph_text = paragraph.get_text()
-        if '$' in paragraph_text:
-            sentences = split_sentences(paragraph_text)
-            for sentence in sentences:
-                if '$' in sentence:
-                    contexts.append(sentence)
+        for match in REGEX.finditer(paragraph_text):
+            print(match.group())
 
     return contexts 
 
