@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CBO Simplifier</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap-flatly.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <style>
+    .affix {
+        top: 0;
+        width: 100%;
+        z-index: 10000;
+     }
+
+    .affix + .container-fluid {
+        padding-top: 70px;
+    }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-inverse" data-spy="affix" data-offset-top="0">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav">
+                <li><a class="navbar-brand" href="index.html">Home</a></li>
+                <li><a href="explore.html">Explore</a></li>
+                <li><a href="about.html">About</a></li>
+                <li class="active"><a href="contribute.html">Contribute</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row content">
+            <div class="col-md-2"></div>
+
+            <div class="col-md-8">
+                <h1> Currently Open Bills </h1>
+                <p>
+                    These are the bills that the CBO has published, but which we
+                    don't have cost summaries for. Select one of the below to get
+                    started!
+                </p>
+
+                <form>
+                    <select id="contrib-bill">
+                        <option value="1">
+                            <a href="https://www.cbo.gov/publication/52148">S. 3084, American Innovation and Competitiveness Act</a>
+                        </option>
+                        <option value="2" selected>
+                            <a href="https://www.cbo.gov/publication/52146">H.R. 5984, Pechanga Band of Luiseno Mission Indians Water Rights Settlement Act</a>
+                        </option>
+                    </select>
+
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2>Income</h2>
+                                <ul>
+                                    <li>$0</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h2>Spending</h2>
+                                <ul>
+                                    <li>$16.1 billion over 5 years</li>
+                                    <li>$0.9 billion after 5 years</li>
+                                    <li>$25 million over 10 years</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center">
+                        <label for="contrib-income">Income Amount And Timespan:</label>
+                        <input type="text">
+                    </div>
+
+                    <div class="form-group text-center">
+                        <button id="contrib-add-income" class="btn btn-default">Record Income</button>
+                    </div>
+
+                    <div class="form-group text-center">
+                        <label for="contrib-spending">Spending Amount And Timespan:</label>
+                        <input type="text">
+                    </div>
+
+                    <div class="form-group text-center">
+                        <button id="contrib-add-spending" class="btn btn-default">Record Spending</button>
+                    </div>
+
+                    <div class="form-group text-center">
+                        <button id="contrib-submit" class="btn btn-primary btn-block"> Submit Cost Description </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-2"></div>
+        </div>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+</body>
+
+</html>
