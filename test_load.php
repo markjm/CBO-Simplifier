@@ -3,7 +3,7 @@ require 'php/config.php';
 require 'php/util.php';
 
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($!db) {
+if (!$db) {
     header('HTTP/1.1 500 Cannot connect to database');
     send_text('');
     exit;
@@ -20,6 +20,8 @@ register_shutdown_function(function() {
     }
 });
 
+header('Content-Type: text/plain');
+
 // The data from the home page, in array form for feeding to the DB
 $bills = array(
     array(
@@ -35,7 +37,7 @@ $bills = array(
     array(
         'title' => 'ADA Education and Reform Act of 2016',
         'code' => 'H.R. 5707',
-        'summary' => 'H.R. 3765 would require the Department of Justice (DOJ) to establish a program to educate state and local governments and property owners on public accommodations for persons with disabilities.'
+        'summary' => 'H.R. 3765 would require the Department of Justice (DOJ) to establish a program to educate state and local governments and property owners on public accommodations for persons with disabilities.',
         'cbo_url' => 'https://www.cbo.gov/publication/52131',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/hr3765.pdf',
         'financial' => array(
@@ -88,10 +90,10 @@ $bills = array(
 );
 
 // Wiping out old test data, and initializing the schema
-$db->execute('DROP TABLE IF EXISTS Bills');
-$db->execute('DROP TABLE IF EXISTS Finances');
+$db->query('DROP TABLE IF EXISTS Bills');
+$db->query('DROP TABLE IF EXISTS Finances');
 
-$db->execute('
+$db->query('
     CREATE TABLE Bills(
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
         title VARCHAR(128) NOT NULL,
@@ -102,7 +104,7 @@ $db->execute('
     )
 ');
 
-$db->execute('
+$db->query('
     CREATE TABLE Finances(
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
         bill INTEGER NOT NULL,
@@ -113,13 +115,14 @@ $db->execute('
     )
 ');
 
-for ($bills as $bill) {
-    $stmt = $db->prepare('
+foreach ($bills as $bill) {
+    echo ">>> Inserting ${bill['title']}\n";
+    $bill_stmt = $db->prepare('
         INSERT INTO Bills(title, summary, code, cbo_url, pdf_url)
         VALUES (?, ?, ?, ?, ?)
     ');
 
-    $stmt->bind_param(
+    $bill_stmt->bind_param(
         'sssss',
         $bill['title'],
         $bill['summary'],
@@ -127,21 +130,24 @@ for ($bills as $bill) {
         $bill['cbo_url'],
         $bill['pdf_url']);
 
-    $stmt->execute();
+    $bill_stmt->execute();
+    $bill_stmt->close();
 
-    $bill_id = $mysqli->insert_id;
+    $bill_id = $db->insert_id;
     foreach ($bill['financial'] as $finance) {
-        $stmt = $db->prepare('
+        echo "... Inserting financial ${finance['timespan']}\n";
+        $finance_stmt = $db->prepare('
             INSERT INTO Finances(bill, timespan, amount)
             VALUES (?, ?, ?)
         ');
 
-        $stmt->bind_param(
+        $finance_stmt->bind_param(
             'isd',
             $bill_id,
             $finance['timespan'],
             $finance['amount']);
 
-        $stmt->execute();
+        $finance_stmt->execute();
+        $finance_stmt->close();
     }
 }

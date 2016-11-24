@@ -4,7 +4,7 @@ require 'php/orm_bill.php';
 require 'php/util.php';
 
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-if ($!db) {
+if (!$db) {
     header('HTTP/1.1 500 Cannot connect to database');
     send_text('');
     exit;
