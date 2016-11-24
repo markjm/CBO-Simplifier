@@ -90,8 +90,8 @@ $bills = array(
 );
 
 // Wiping out old test data, and initializing the schema
-$db->query('DROP TABLE IF EXISTS Bills');
 $db->query('DROP TABLE IF EXISTS Finances');
+$db->query('DROP TABLE IF EXISTS Bills');
 
 $db->query('
     CREATE TABLE Bills(
