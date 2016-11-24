@@ -16,17 +16,26 @@ function send_text($text) {
 }
 /*
  * This is like a foreach loop, but in function form. It executes the query in
- * a prepared statement, and 
+ * a prepared statement, and passes results one row at a time to the given
+ * function.
+ *
+ * Returns true on success, false on failure.
 */
 function iter_stmt_result($stmt, $fn) {
     $stmt->execute();
+
     $query_result = $stmt->get_result();
+    if (!$query_result) {
+        return false;
+    }
+
     while ($row = $query_result->fetch_assoc()) {
         $fn($row);
     }
 
     $query_result->free();
     $stmt->close();
+    return true;
 }
 
 /*

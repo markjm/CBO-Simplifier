@@ -83,16 +83,23 @@ class Bill {
      *           'committee' => STRING,
      *           'start_id' => INTEGER)
      */
-    public static function from_query($db, $params, $page_size=25) {
+    public static function from_query($db, $url_params, $page_size=25) {
         $sql = 'SELECT id FROM Bills';
         $sql_suffix = ' ORDER BY id DESC LIMIT ' . $page_size;
-        $conditions = array('id < ?');
-        $params = array($last_id);
-        $param_types = 'i';
+        if (isset($params['last_id'])) {
+            $conditions = array('id < ?');
+            $params = array($params['last_id']);
+            $param_types = 'i';
+        } else {
+            // Wihout a last load (for example, on a load at the top of
+            // the home page), we don't have any base conditions. However,
+            // we don't want to create a special case.
+            $conditions = array('1 = ?');
+            $params = array(1);
+            $param_types = 'i';
+        }
 
-        for ($params as $param_name) {
-            $param_value = $params[$param_name];
-
+        foreach ($url_params as $param_name => $param_value) {
             switch ($param_name) {
             case 'before':
                 array_push($conditions, 'published <= ?');
@@ -114,7 +121,9 @@ class Bill {
             }
         }
 
-        $stmt= $db->prepare($sql . ' WHERE ' . implode($conditions, ' AND ') . $sql_suffix);
+        $full_sql = $sql . ' WHERE ' . implode($conditions, ' AND ') . $sql_suffix;
+        error_log(">>> '$full_sql'");
+        $stmt = $db->prepare($full_sql);
 
         call_user_func_array(
             array($stmt, 'bind_param'),

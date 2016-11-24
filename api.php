@@ -77,11 +77,11 @@ $get_router->attach('/bills', function($vars) use (&$db) {
         $next_page_query_params['committee'] = urlencode($_GET['committee']);
     }
 
-    $bills = Bill::from_query($db, $params);
+    $bills = Bill::from_query($db, $query_params);
     $response = array();
     $last_id = null;
 
-    for ($bills as $idx) {
+    foreach ($bills as $idx) {
         $bill = $bills[$idx];
         $response[$bill->get_id()] = $bill->as_array();
         $last_id = $bill->get_id();
@@ -92,8 +92,8 @@ $get_router->attach('/bills', function($vars) use (&$db) {
 
     if ($last_id != null) {
         $response_params = array();
-        for ($next_page_query_params as $param) {
-            $response_params = $param . "=" . $next_page_query_params[$param];
+        foreach ($next_page_query_params as $key => $value) {
+            $response_params = $key . "=" . $value;
         }
 
         $response['next'] = '/api.php/bills?' . implode('&', $response_params);
@@ -105,7 +105,7 @@ $get_router->attach('/bills', function($vars) use (&$db) {
 });
 
 $ok = false;
-if ($_SERVER['REQUEST_INFO'] == 'GET') {
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $ok = $get_router->invoke($_SERVER['PATH_INFO']);
 }
 
