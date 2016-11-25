@@ -125,7 +125,7 @@ class Bill {
                 $LOGGER->debug('Condition: before {when}',
                                array('when' => $param_value));
 
-                $before_ref = sqldatetime($param_value);
+                $before_ref = sqldatetime($param_value, false);
                 array_push($conditions, 'published <= ?');
                 $params[] =& $before_ref;
                 $param_types = $param_types . 's';
@@ -135,7 +135,7 @@ class Bill {
                 $LOGGER->debug('Condition: after {when}',
                                 array('when' => $param_value));
 
-                kafter_ref = sqldatetime($param_value);
+                $after_ref = sqldatetime($param_value, false);
                 array_push($conditions, 'published >= ?');
                 $params[] =& $after_ref;
                 $param_types = $param_types . 's';

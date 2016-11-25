@@ -41,8 +41,12 @@ function iter_stmt_result($stmt, $fn) {
 /*
  * Converts a UNIX timestamp to a MySQL-compatible date.
  */
-function sqldatetime($timestamp) {
-    return date('Y-m-d H:i:s', $timestamp);
+function sqldatetime($timestamp, $with_time=true) {
+    if ($with_time) { 
+        return date('Y-m-d H:i:s', $timestamp);
+    } else {
+        return date('Y-m-d', $timestamp);
+    }
 }
 
 /*
