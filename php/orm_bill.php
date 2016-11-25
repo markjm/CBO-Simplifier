@@ -157,7 +157,7 @@ class Bill {
             array_merge(array($param_types), $params));
 
         $ids = array();
-        iter_stmt_result($stmt, function($row) use (&$results) {
+        iter_stmt_result($stmt, function($row) use (&$ids, &$results) {
             array_push($ids, $row['id']);
         });
 
