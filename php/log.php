@@ -1,15 +1,15 @@
 <?php
 require_once 'php/util.php';
 
-const LOG_DEBUG = 0;
-const LOG_WARNING = 1;
-const LOG_ERROR = 2;
+const ULOG_DEBUG = 0;
+const ULOG_WARNING = 1;
+const ULOG_ERROR = 2;
 
 /*
  * Gets a Logger that logs via the 'error_log' function
  */
 function get_error_logger($name) {
-    return new Logger($name, error_log);
+    return new Logger($name, 'error_log');
 }
 
 class Logger {
@@ -44,7 +44,7 @@ class Logger {
      * Formats the information from a logging statement into a complete logging
      * message.
      */
-    private function format_log($level, $messgae) {
+    private function format_log($level, $message) {
         $levels = array('DEBUG', 'WARNING', 'ERROR');
         $params = array(
             'time' => date('c'),
@@ -68,20 +68,22 @@ class Logger {
         if ($level < $this->log_level) return;
 
         $full_message = $this->format_log($level, fmt_string($format, $params));
-        $this->log_method($full_message);
+
+        $log_method = $this->log_method;
+        $log_method($full_message);
     }
 
     // Convenience logging functions that imply a specific log level
 
     public function debug($format, $params=null) {
-        $this->log(LOG_DEBUG, $format, $params);
+        $this->log(ULOG_DEBUG, $format, $params);
     }
 
     public function warning($format, $params=null) {
-        $this->log(LOG_WARNING, $format, $params);
+        $this->log(ULOG_WARNING, $format, $params);
     }
 
     public function error($format, $params=null) {
-        $this->log(LOG_ERROR, $format, $params);
+        $this->log(ULOG_ERROR, $format, $params);
     }
 }

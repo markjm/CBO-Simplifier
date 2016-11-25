@@ -5,7 +5,7 @@ require_once 'php/orm_bill.php';
 require_once 'php/util.php';
 
 $LOGGER = get_error_logger('api.php');
-$LOGGER->set_level(LOG_DEBUG);
+$LOGGER->set_level(ULOG_DEBUG);
 
 $LOGGER->debug('----- CONNECTION -----');
 
@@ -17,8 +17,10 @@ if (!$db) {
 }
 
 register_shutdown_function(function() {
-    global $db;
+    global $LOGGER;
     $LOGGER->debug('Closing database');
+
+    global $db;
     $db->close();
 
     // A convenience - if we end up dying for some reason, make sure that the

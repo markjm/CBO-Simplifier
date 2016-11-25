@@ -151,6 +151,10 @@ class Bill {
         );
 
         $LOGGER->debug('Executing: {query}', array('query' => $full_sql));
+        $LOGGER->debug(
+            'Params({param_types}): {params}',
+            array('params' => print_r($params, true),
+                  'param_types' => $param_types));
 
         $stmt = $db->prepare($full_sql);
 
