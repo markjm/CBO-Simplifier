@@ -16,6 +16,8 @@ class Finance {
      * Returns null if there is no matching Finance entry.
      */
     public static function from_id($db, $id) {
+        global $LOGGER;
+
         $query = $db->prepare('
             SELECT timespan, amount
             FROM Finances
@@ -35,6 +37,12 @@ class Finance {
                                $bill,
                                (int)$out_timespan,
                                (double)$out_amount);
+        }
+
+        if ($obj == null) {
+            $LOGGER->warning(
+                'No such Finance entry for id {id}',
+                array('id' => $id));
         }
 
         $query->close();

@@ -1,7 +1,13 @@
 <?php
 require 'php/config.php';
+require 'php/log.php';
 require 'php/orm_bill.php';
 require 'php/util.php';
+
+$LOGGER = get_error_logger('api.php');
+$LOGGER->set_level(LOG_DEBUG);
+
+$LOGGER->debug('----- CONNECTION -----');
 
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if (!$db) {
@@ -12,6 +18,7 @@ if (!$db) {
 
 register_shutdown_function(function() {
     global $db;
+    $LOGGER->debug('Closing database');
     $db->close();
 
     // A convenience - if we end up dying for some reason, make sure that the
@@ -46,17 +53,21 @@ $get_router = new Router();
  *
  * GET /bills?start=<INTEGER>&before=<UNIX-TIMESTAMP>&after=<UNIX-TIMESTAMP>&comittee=<NAME>
  */
-$get_router->attach('/bills', function($vars) use (&$db) {
+$get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $query_params = array();
     $next_page_query_params = array();
 
     if (isset($_GET['start'])) {
+        $LOGGER->debug('start = {start}', $_GET);
+
         $query_params['start_id'] = force_int(
             $_GET['start'],
             'Starting row must be integer');
     }
 
     if (isset($_GET['before'])) {
+        $LOGGER->debug('before = {before}', $_GET);
+
         $query_params['before'] = force_int(
             $_GET['before'],
             'Before must be a Unix timestamp');
@@ -65,6 +76,8 @@ $get_router->attach('/bills', function($vars) use (&$db) {
     }
 
     if (isset($_GET['after'])) {
+        $LOGGER->debug('after = {after}', $_GET);
+
         $query_params['after'] = force_int(
             $_GET['after'],
             'After must be a Unix timestamp');
@@ -73,6 +86,8 @@ $get_router->attach('/bills', function($vars) use (&$db) {
     }
 
     if (isset($_GET['committee'])) {
+        $LOGGER->debug('committee = {committee}', $_GET);
+
         $query_params['committee'] = $_GET['committee'];
         $next_page_query_params['committee'] = urlencode($_GET['committee']);
     }
@@ -87,6 +102,8 @@ $get_router->attach('/bills', function($vars) use (&$db) {
         $last_id = $bill->get_id();
     }
 
+    $LOGGER->debug('Last ID was {last_id}', array('last_id' => $last_id));
+
     // Generate the URL to the next page, for pagination purposes
     $next_page_query_params['start'] = $last_id;
 
@@ -100,6 +117,8 @@ $get_router->attach('/bills', function($vars) use (&$db) {
     } else {
         $response['next'] = null;
     }
+
+    $LOGGER->debug('Next page URL: {next_url}', array('next_url' => $response['next']));
 
     send_json($response);
 });

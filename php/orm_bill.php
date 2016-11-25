@@ -30,6 +30,8 @@ class Bill {
      * exists.
      */
     public static function from_id($db, $id) {
+        global $LOGGER;
+
         $query = $db->prepare('
             SELECT title, summary, code, cbo_url, pdf_url
             FROM Bills
@@ -58,6 +60,7 @@ class Bill {
 
         $query->close();
         if ($obj == null) {
+            $LOGGER->warning('No such Bill with id {id}', array('id' => $id));
             return null;
         }
 
@@ -69,6 +72,10 @@ class Bill {
         iter_stmt_result($query, function($row) use (&$db, &$obj) {
             array_push($obj->finances, Finance::from_id($db, $row['id']));
         });
+
+        $LOGGER->debug(
+            'Bill[{id}] had {entries} finance entries',
+            array('id' => $id, 'entries' => count($obj->finances)));
 
         return $obj;
     }
@@ -84,13 +91,15 @@ class Bill {
      *           'start_id' => INTEGER)
      */
     public static function from_query($db, $url_params, $page_size=25) {
-        $sql = 'SELECT id FROM Bills';
-        $sql_suffix = ' ORDER BY id DESC LIMIT ' . $page_size;
-        if (isset($params['last_id'])) {
+        global $LOGGER;
+
+        if (isset($params['start'])) {
             $conditions = array('id < ?');
-            $params = array($params['last_id']);
+            $params = array($params['start']);
             $param_types = 'i';
         } else {
+            $LOGGER->debug('Executing without "start" param');
+
             // Wihout a last load (for example, on a load at the top of
             // the home page), we don't have any base conditions. However,
             // we don't want to create a special case.
@@ -102,18 +111,27 @@ class Bill {
         foreach ($url_params as $param_name => $param_value) {
             switch ($param_name) {
             case 'before':
+                $LOGGER->debug('Condition: before {when}',
+                               array('when' => $param_value));
+
                 array_push($conditions, 'published <= ?');
                 array_push($params, sqldatetime($param_value));
                 $param_types = $param_types . 's';
                 break;
 
             case 'after':
+                $LOGGER->debug('Condition: after {when}',
+                                array('when' => $param_value));
+
                 array_push($conditions, 'published >= ?');
                 array_push($params, sqldatetime($param_value));
                 $param_types = $param_types . 's';
                 break;
 
             case 'committee':
+                $LOGGER->debug('Condition: by the {committee}',
+                               array('committee' => $param_value));
+
                 array_push($conditions, 'committee = ?');
                 array_push($params, $param_value);
                 $param_types = $param_types . 's';
@@ -121,8 +139,17 @@ class Bill {
             }
         }
 
-        $full_sql = $sql . ' WHERE ' . implode($conditions, ' AND ') . $sql_suffix;
-        error_log(">>> '$full_sql'");
+        $full_sql = fmt_string(
+            'SELECT id FROM Bills WHERE {conditions}
+             ORDER BY id DESC LIMIT {page_size}',
+            array(
+                'conditions' => implode($conditions, ' AND '),
+                'page_size' => $page_size
+            )
+        );
+
+        $LOGGER->debug('Executing: {query}', array('query' => $full_sql));
+
         $stmt = $db->prepare($full_sql);
 
         call_user_func_array(
