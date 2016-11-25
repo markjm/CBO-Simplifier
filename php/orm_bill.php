@@ -1,4 +1,6 @@
 <?php
+require_once 'php/orm_finance.php';
+
 class Bill {
     private $id;
     private $title;

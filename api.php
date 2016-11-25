@@ -1,8 +1,8 @@
 <?php
-require 'php/config.php';
-require 'php/log.php';
-require 'php/orm_bill.php';
-require 'php/util.php';
+require_once 'php/config.php';
+require_once 'php/log.php';
+require_once 'php/orm_bill.php';
+require_once 'php/util.php';
 
 $LOGGER = get_error_logger('api.php');
 $LOGGER->set_level(LOG_DEBUG);

@@ -1,5 +1,5 @@
 <?php
-require 'php/util.php';
+require_once 'php/util.php';
 
 const LOG_DEBUG = 0;
 const LOG_WARNING = 1;
