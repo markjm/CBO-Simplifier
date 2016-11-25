@@ -94,7 +94,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         $next_page_query_params['committee'] = urlencode($_GET['committee']);
     }
 
-    $bills = Bill::from_query($db, $query_params);
+    $bills = Bill::from_query($db, $query_params, PAGE_SIZE);
     $response = array();
     $last_id = null;
 
