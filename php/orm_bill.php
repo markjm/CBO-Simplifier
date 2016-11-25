@@ -53,7 +53,17 @@ class Bill {
         // danger of throwing away multiple objects here
         $obj = null;
         while ($query->fetch()) {
+            $LOGGER->debug(
+                'Bill({id}) => ({title}, {summary}, {code}, {cbo}, {pdf})',
+                array('id' => $id,
+                      'title' => $out_title,
+                      'summary' => $out_summary,
+                      'code' => $out_code,
+                      'cbo' => $out_cbo_url,
+                      'pdf' => $out_pdf_url));
+
             $obj = new Bill($id,
+                            $out_title,
                             $out_summary,
                             $out_code,
                             $out_cbo_url,
@@ -95,7 +105,7 @@ class Bill {
     public static function from_query($db, $url_params, $page_size=25) {
         global $LOGGER;
 
-        if (isset($params['start'])) {
+        if (isset($url_params['start'])) {
             $conditions = array('id < ?');
             $params = array($params['start']);
             $param_types = 'i';
@@ -167,11 +177,12 @@ class Bill {
 
         $ids = array();
         iter_stmt_result($stmt, function($row) use (&$ids, &$results) {
-            array_push($ids, $row['id']);
+            array_push($ids, (int)$row['id']);
         });
 
         $results = array();
         foreach ($ids as $id) {
+            $LOGGER->debug('Creating Bill({id})', array('id' => $id));
             array_push($results, Bill::from_id($db, $id));
         }
 
@@ -182,13 +193,18 @@ class Bill {
      * Converts this object into an array, suitable for emission as JSON.
      */
     public function to_array() {
+        $finance_array = array();
+        foreach ($this->finances as $finance) {
+            array_push($finance_array, $finance->to_array());
+        }
+
         return array(
             'title' => $this->title,
             'code' => $this->code,
             'summary' => $this->summary,
-            'cbo_url' => $this->cbo_url,
-            'pdf_url' => $this->pdf_url,
-            'finances' => $this->finances->to_array()
+            'cbo_url' => $this->cbo_link,
+            'pdf_url' => $this->pdf_link,
+            'finances' => $finance_array
         );
     }
 }

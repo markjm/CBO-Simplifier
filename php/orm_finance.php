@@ -34,7 +34,6 @@ class Finance {
         $obj = null;
         while ($query->fetch()) {
             $obj = new Finance($id,
-                               $bill,
                                (int)$out_timespan,
                                (double)$out_amount);
         }

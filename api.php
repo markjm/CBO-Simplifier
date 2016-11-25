@@ -62,7 +62,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     if (isset($_GET['start'])) {
         $LOGGER->debug('start = {start}', $_GET);
 
-        $query_params['start_id'] = force_int(
+        $query_params['start'] = force_int(
             $_GET['start'],
             'Starting row must be integer');
     }
@@ -98,9 +98,8 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $response = array();
     $last_id = null;
 
-    foreach ($bills as $idx) {
-        $bill = $bills[$idx];
-        $response[$bill->get_id()] = $bill->as_array();
+    foreach ($bills as $bill) {
+        $response[$bill->get_id()] = $bill->to_array();
         $last_id = $bill->get_id();
     }
 
@@ -112,7 +111,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     if ($last_id != null) {
         $response_params = array();
         foreach ($next_page_query_params as $key => $value) {
-            $response_params = $key . "=" . $value;
+            array_push($response_params, $key . "=" . $value);
         }
 
         $response['next'] = '/api.php/bills?' . implode('&', $response_params);
