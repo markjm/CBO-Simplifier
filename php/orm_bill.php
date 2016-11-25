@@ -100,7 +100,7 @@ class Bill {
      *     array('before' => DATE,
      *           'after' => DATE,
      *           'committee' => STRING,
-     *           'start_id' => INTEGER)
+     *           'start' => INTEGER)
      */
     public static function from_query($db, $url_params, $page_size=25) {
         global $LOGGER;
@@ -117,6 +117,8 @@ class Bill {
             $LOGGER->debug('Executing without "start" param');
         }
 
+        // Transfer each of the URL parameters into a form that the DB can 
+        // understand, so that they can be part of the query
         foreach ($url_params as $param_name => $param_value) {
             switch ($param_name) {
             case 'before':
@@ -133,7 +135,7 @@ class Bill {
                 $LOGGER->debug('Condition: after {when}',
                                 array('when' => $param_value));
 
-                $after_ref = sqldatetime($param_value);
+                kafter_ref = sqldatetime($param_value);
                 array_push($conditions, 'published >= ?');
                 $params[] =& $after_ref;
                 $param_types = $param_types . 's';
@@ -151,6 +153,8 @@ class Bill {
             }
         }
 
+        // To avoid having an empty WHERE clause, don't handle conditions if
+        // none were provided
         if (count($params) > 0) {
             $full_sql = fmt_string(
                 'SELECT id FROM Bills WHERE {conditions}
@@ -172,6 +176,8 @@ class Bill {
 
         $stmt = $db->prepare($full_sql);
 
+        // mysqli_stmt::bind_param won't accept zero parameters, so we can only
+        // do this if parameters were given
         if (count($params) > 0) {
             call_user_func_array(
                 array($stmt, 'bind_param'),

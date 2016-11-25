@@ -59,6 +59,8 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $query_params = array();
     $next_page_query_params = array();
 
+    // Load up all the URL parameters we care about, so that the ORM will 
+    // consider them when we do our querying
     if (isset($_GET['start'])) {
         $LOGGER->debug('start = {start}', $_GET);
 
@@ -96,6 +98,9 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
 
     $bills = Bill::from_query($db, $query_params, PAGE_SIZE);
     $response = array();
+
+    // We need this to figure out where this page ends, so we can make a URL
+    // for the next page
     $last_id = null;
 
     foreach ($bills as $bill) {
