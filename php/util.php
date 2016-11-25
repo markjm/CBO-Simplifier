@@ -130,7 +130,7 @@ class Router {
  */
 function http404($msg) {
     header('HTTP/1.1 404 ' . $msg);
-    graceful_exit(true);
+    exit;
 }
 
 /*
@@ -143,4 +143,44 @@ function force_int($value, $msg) {
     }
 
     return (int)$value;
+}
+
+/*
+ * Basic string formatter, using names for formatting instead of positional
+ * placeholders.
+ */
+function fmt_string($format, $params) {
+    $output = array();
+
+    $in_braces = false;
+    $brace_name = '';
+    for ($i = 0; $i < strlen($format); $i++) {
+        $char = $format[$i];
+        if ($char == '{') {
+            if ($in_braces) {
+                array_push($output, $char);
+                $in_braces = false;
+            } else {
+                $in_braces = true;
+            }
+        } else if ($char == '}') {
+            if ($in_braces) {
+                array_push($output, $params[$brace_name]);
+                $brace_name = '';
+                $in_braces = false;
+            } else {
+                array_push($output, $char);
+            }
+        } else if ($in_braces) {
+            $brace_name = $brace_name . $char;
+        } else {
+            array_push($output, $char);
+        }
+    }
+
+    if ($in_braces) {
+        throw new Exception("Expected terminating } in format string");
+    }
+
+    return implode('', $output);
 }
