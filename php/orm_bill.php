@@ -102,12 +102,9 @@ class Bill {
         } else {
             $LOGGER->debug('Executing without "start" param');
 
-            // Wihout a last load (for example, on a load at the top of
-            // the home page), we don't have any base conditions. However,
-            // we don't want to create a special case.
-            $conditions = array('1 = ?');
-            $params = array(1);
-            $param_types = 'i';
+            $conditions = array();
+            $params = array();
+            $param_types = '';
         }
 
         foreach ($url_params as $param_name => $param_value) {
@@ -141,14 +138,18 @@ class Bill {
             }
         }
 
-        $full_sql = fmt_string(
-            'SELECT id FROM Bills WHERE {conditions}
-             ORDER BY id DESC LIMIT {page_size}',
-            array(
-                'conditions' => implode($conditions, ' AND '),
-                'page_size' => $page_size
-            )
-        );
+        if (count($params) > 0) {
+            $full_sql = fmt_string(
+                'SELECT id FROM Bills WHERE {conditions}
+                ORDER BY id DESC LIMIT {page_size}',
+                array(
+                    'conditions' => implode($conditions, ' AND '),
+                    'page_size' => $page_size
+                )
+            );
+        } else {
+            $full_sql = 'SELECT id FROM Bills ORDER BY id DESC LIMIT ' . $page_size;
+        }
 
         $LOGGER->debug('Executing: {query}', array('query' => $full_sql));
         $LOGGER->debug(
@@ -158,9 +159,11 @@ class Bill {
 
         $stmt = $db->prepare($full_sql);
 
-        call_user_func_array(
-            array($stmt, 'bind_param'),
-            array_merge(array($param_types), $params));
+        if (count($params) > 0) {
+            call_user_func_array(
+                array($stmt, 'bind_param'),
+                array_merge(array($param_types), $params));
+        }
 
         $ids = array();
         iter_stmt_result($stmt, function($row) use (&$ids, &$results) {
