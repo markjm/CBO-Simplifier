@@ -1,6 +1,6 @@
 <?php
-require 'php/config.php';
-require 'php/util.php';
+require_once 'php/config.php';
+require_once 'php/util.php';
 
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if (!$db) {
@@ -29,6 +29,8 @@ $bills = array(
         'summary' => 'This bill requires the Department of the Treasury to: (1) invest a specified percentage of the Postal Service Retiree Health Benefits Fund, using one or more qualified professional asset managers, in index funds modeled after those established for Thrift Savings Fund investments; and (2) ensure that the investment replicates the performance of the longest-term target date asset allocation investment fund established by the Federal Retirement Thrift Investment Board.',
         'cbo_url' => 'https://www.cbo.gov/publication/52130',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/hr5707.pdf',
+        'committee' => 'House Committee On Oversight And Government Reform',
+        'published' => '2016-10-20',
         'financial' => array(
             array('timespan' => 10, 'amount' => -4.6e9)
         )
@@ -40,6 +42,8 @@ $bills = array(
         'summary' => 'H.R. 3765 would require the Department of Justice (DOJ) to establish a program to educate state and local governments and property owners on public accommodations for persons with disabilities.',
         'cbo_url' => 'https://www.cbo.gov/publication/52131',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/hr3765.pdf',
+        'committee' => 'House Committee On The Judiciary',
+        'published' => '2016-10-20',
         'financial' => array(
             array('timespan' => 5, 'amount' => -15e6)
         )
@@ -51,6 +55,8 @@ $bills = array(
         'summary' => 'S. 3099 would prohibit the National Park Service (NPS) from implementing or enforcing restrictions on fishing in Biscayne National Park in Florida, unless the restrictions are developed in coordination with the Florida Fish and Wildlife Conservation Commission (FWC) and are the least restrictive measures necessary for effective management of the fishery. The bill also would require the National Oceanic and Atmospheric Administration (NOAA) to issue a final regulation implementing the Billfish Conservation Act of 2012, which prohibits the sale of billfish, within 45 days of enactment of the bill. Finally, S. 3099 would amend the Magnuson-Stevens Fishery Conservation and Management Act to prohibit people from feeding sharks in federal waters.',
         'cbo_url' => 'https://www.cbo.gov/publication/52132',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/s3099.pdf',
+        'committee' => 'Senate Committee on Commerce, Science, and Transportation',
+        'published' => '2016-10-21',
         'financial' => array(
             array('timespan' => 0, 'amount' => -500e3)
         )
@@ -62,6 +68,8 @@ $bills = array(
         'summary' => 'S. 2138 would authorize Small Business Administration (SBA) employees that review federal contracts to delay the acceptance of a subcontracting plan for up to 30 days if the plan fails to maximize the participation of small businesses. The bill also would require the SBA to issue regulations that provide guidance on how to comply with the requirement to maximize small business participation.',
         'cbo_url' => 'https://www.cbo.gov/publication/52134',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/s2138.pdf',
+        'committee' => 'Senate Committee on Small Business and Entrepreneurship',
+        'published' => '2016-10-24',
         'financial' => array(
             array('timespan' => 5, 'amount' => -11e6)
         )
@@ -73,6 +81,8 @@ $bills = array(
         'summary' => 'To amend title 38, United States Code, to improve the accountability of employees of the Department of Veterans Affairs, to improve health care and benefits for veterans, and for other purposes.',
         'cbo_url' => 'https://www.cbo.gov/publication/52133',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/s2921.pdf',
+        'committee' => "Senate Committee on Veterans’ Affairs",
+        'published' => '2016-10-24',
         'financial' => array(
             array('timespan' => 10, 'amount' => 3.9e9),
             array('timespan' => 5, 'amount' => 3.5e9)
@@ -85,6 +95,8 @@ $bills = array(
         'summary' => 'H.R. 5428 would allow spouses of service members to claim the same state of residence as the service member for those purposes, regardless of whether the spouse had ever resided in that state.',
         'cbo_url' => 'https://www.cbo.gov/publication/52135',
         'pdf_url' => 'https://www.cbo.gov/sites/default/files/114th-congress-2015-2016/costestimate/hr5428.pdf',
+        'committee' => "House Committee on Veterans’ Affairs",
+        'published' => '2016-10-25',
         'financial' => array()
     )
 );
@@ -98,6 +110,8 @@ $db->query('
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
         title VARCHAR(128) NOT NULL,
         summary VARCHAR(1024) NOT NULL,
+        committee VARCHAR(1024) NOT NULL,
+        published DATE NOT NULL,
         code VARCHAR(16) NOT NULL,
         cbo_url VARCHAR(256) NOT NULL,
         pdf_url VARCHAR(256) NOT NULL
@@ -118,14 +132,16 @@ $db->query('
 foreach ($bills as $bill) {
     echo ">>> Inserting ${bill['title']}\n";
     $bill_stmt = $db->prepare('
-        INSERT INTO Bills(title, summary, code, cbo_url, pdf_url)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO Bills(title, summary, committee, published, code, cbo_url, pdf_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ');
 
     $bill_stmt->bind_param(
-        'sssss',
+        'sssssss',
         $bill['title'],
         $bill['summary'],
+        $bill['committee'],
+        $bill['published'],
         $bill['code'],
         $bill['cbo_url'],
         $bill['pdf_url']);
