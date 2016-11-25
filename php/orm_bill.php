@@ -5,6 +5,8 @@ class Bill {
     private $id;
     private $title;
     private $summary;
+    private $committee;
+    private $published;
     private $code;
     private $cbo_link;
     private $pdf_link;
@@ -13,12 +15,16 @@ class Bill {
     private function __construct($id,
                                  $title,
                                  $summary,
+                                 $committee,
+                                 $published,
                                  $code,
                                  $cbo_link,
                                  $pdf_link) {
         $this->id = $id;
         $this->title = $title;
         $this->summary = $summary;
+        $this->committee = $committee;
+        $this->published = $published;
         $this->code = $code;
         $this->cbo_link = $cbo_link;
         $this->pdf_link = $pdf_link;
@@ -35,7 +41,7 @@ class Bill {
         global $LOGGER;
 
         $query = $db->prepare('
-            SELECT title, summary, code, cbo_url, pdf_url
+            SELECT title, summary, committee, published, code, cbo_url, pdf_url
             FROM Bills
             WHERE id = ?
         ');
@@ -45,6 +51,8 @@ class Bill {
         $query->execute();
         $query->bind_result($out_title,
                             $out_summary,
+                            $out_committee,
+                            $out_published,
                             $out_code,
                             $out_cbo_url,
                             $out_pdf_url);
@@ -54,10 +62,12 @@ class Bill {
         $obj = null;
         while ($query->fetch()) {
             $LOGGER->debug(
-                'Bill({id}) => ({title}, {summary}, {code}, {cbo}, {pdf})',
+                'Bill({id}) => ({title}, {summary}, {committee}, {published}, {code}, {cbo}, {pdf})',
                 array('id' => $id,
                       'title' => $out_title,
                       'summary' => $out_summary,
+                      'committee' => $out_committee,
+                      'published' => $out_published,
                       'code' => $out_code,
                       'cbo' => $out_cbo_url,
                       'pdf' => $out_pdf_url));
@@ -65,6 +75,8 @@ class Bill {
             $obj = new Bill($id,
                             $out_title,
                             $out_summary,
+                            $out_committee,
+                            $out_published,
                             $out_code,
                             $out_cbo_url,
                             $out_pdf_url);
@@ -211,6 +223,8 @@ class Bill {
             'title' => $this->title,
             'code' => $this->code,
             'summary' => $this->summary,
+            'committee' => $this->committee,
+            'published' => $this->published,
             'cbo_url' => $this->cbo_link,
             'pdf_url' => $this->pdf_link,
             'finances' => $finance_array

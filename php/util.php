@@ -18,6 +18,9 @@ function send_json($arr) {
 function send_text($text) {
     header('Content-Type: text/plain');
     echo $text;
+
+    global $RESPONSE_SENT;
+    $RESPONSE_SENT = true;
 }
 /*
  * This is like a foreach loop, but in function form. It executes the query in
