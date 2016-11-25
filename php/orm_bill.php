@@ -104,17 +104,17 @@ class Bill {
      */
     public static function from_query($db, $url_params, $page_size=25) {
         global $LOGGER;
+        $conditions = array();
+        $params = array();
+        $param_types = '';
 
         if (isset($url_params['start'])) {
-            $conditions = array('id < ?');
-            $params = array($params['start']);
+            $start_ref = $url_params['start'];
+            array_push($conditions, 'id < ?');
+            $params[] =& $start_ref;
             $param_types = 'i';
         } else {
             $LOGGER->debug('Executing without "start" param');
-
-            $conditions = array();
-            $params = array();
-            $param_types = '';
         }
 
         foreach ($url_params as $param_name => $param_value) {
@@ -123,8 +123,9 @@ class Bill {
                 $LOGGER->debug('Condition: before {when}',
                                array('when' => $param_value));
 
+                $before_ref = sqldatetime($param_value);
                 array_push($conditions, 'published <= ?');
-                array_push($params, sqldatetime($param_value));
+                $params[] =& $before_ref;
                 $param_types = $param_types . 's';
                 break;
 
@@ -132,8 +133,9 @@ class Bill {
                 $LOGGER->debug('Condition: after {when}',
                                 array('when' => $param_value));
 
+                $after_ref = sqldatetime($param_value);
                 array_push($conditions, 'published >= ?');
-                array_push($params, sqldatetime($param_value));
+                $params[] =& $after_ref;
                 $param_types = $param_types . 's';
                 break;
 
@@ -141,8 +143,9 @@ class Bill {
                 $LOGGER->debug('Condition: by the {committee}',
                                array('committee' => $param_value));
 
+                $committee_ref = $param_value;
                 array_push($conditions, 'committee = ?');
-                array_push($params, $param_value);
+                $params[] =& $committee_ref;
                 $param_types = $param_types . 's';
                 break;
             }
