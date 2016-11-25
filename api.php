@@ -25,7 +25,9 @@ register_shutdown_function(function() {
 
     // A convenience - if we end up dying for some reason, make sure that the
     // browser gets a response even if we don't end up sending one
-    if (!headers_sent()) {
+    global $RESPONSE_SENT;
+    if (!$RESPONSE_SENT) {
+        $LOGGER->debug('Sending emergency text/plain empty response');
         send_text('');
     }
 });

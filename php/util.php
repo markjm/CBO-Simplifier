@@ -1,10 +1,15 @@
 <?php
+$RESPONSE_SENT = false;
+
 /*
  * Writes JSON to the client, setting the Content-Type to applicatoin/json
  */
 function send_json($arr) {
     header('Content-Type: application/json');
     echo json_encode($arr);
+
+    global $RESPONSE_SENT;
+    $RESPONSE_SENT = true;
 }
 
 /*
