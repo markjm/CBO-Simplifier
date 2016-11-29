@@ -22,6 +22,7 @@ function send_text($text) {
     global $RESPONSE_SENT;
     $RESPONSE_SENT = true;
 }
+
 /*
  * This is like a foreach loop, but in function form. It executes the query in
  * a prepared statement, and passes results one row at a time to the given
@@ -32,16 +33,43 @@ function send_text($text) {
 function iter_stmt_result($stmt, $fn) {
     $stmt->execute();
 
-    $query_result = $stmt->get_result();
-    if (!$query_result) {
-        return false;
-    }
+    /*
+     * classroom.cs.unc.edu lacks the MySQL extension necessary to provide 
+     * mysqli_stmt::get_result, so we have to do a bit of legwork to emulate
+     * it.
+     *
+     * Our goal is to do the following:
 
-    while ($row = $query_result->fetch_assoc()) {
+        $query_result = $stmt->get_result();
+        if (!$query_result) {
+            return false;
+        }
+
+        while ($row = $query_result->fetch_assoc()) {
+            $fn($row);
+        }
+
+        $query_result->free();
+     */
+
+    // http://php.net/manual/en/mysqli-stmt.bind-result.php
+    // See the first comment on the above page
+    $stmt->store_result();
+
+    $variables = array();
+    $row = array();
+    $meta = $stmt->result_metadata();
+
+    while($field = $meta->fetch_field())
+        $variables[] = &$row[$field->name];
+
+    call_user_func_array(array($stmt, 'bind_result'), $variables);
+
+    while($stmt->fetch())
+    {
         $fn($row);
     }
 
-    $query_result->free();
     $stmt->close();
     return true;
 }
