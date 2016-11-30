@@ -98,14 +98,28 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         $next_page_query_params['committee'] = urlencode($_GET['committee']);
     }
 
-    $bills = Bill::from_query($db, $query_params, PAGE_SIZE);
+    // The reason for PAGE_SIZE+1 is to simplify the API - it lets us do a
+    // check to see if we're on the last page before the frontend requets it,
+    // by seeing if we get all the elements back we expect or not.
+    //
+    // The drawback is that we throw away the final element; we can't include
+    // it since we're bound to the configured PAGE_SIZE
+    $bills = Bill::from_query($db, $query_params, PAGE_SIZE + 1);
     $response = array();
 
     // We need this to figure out where this page ends, so we can make a URL
     // for the next page
     $last_id = null;
+    $generate_next_page = false;
 
     foreach ($bills as $bill) {
+        // If this is the case, we're looking at our sentinel "+1 bill", which
+        // we can't return
+        if (count($response) == PAGE_SIZE) {
+            $generate_next_page = true;
+            break;
+        }
+
         $response[$bill->get_id()] = $bill->to_array();
         $last_id = $bill->get_id();
     }
@@ -115,7 +129,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     // Generate the URL to the next page, for pagination purposes
     $next_page_query_params['start'] = $last_id;
 
-    if ($last_id != null) {
+    if ($generate_next_page) {
         $response_params = array();
         foreach ($next_page_query_params as $key => $value) {
             array_push($response_params, $key . "=" . $value);
