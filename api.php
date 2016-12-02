@@ -61,6 +61,36 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $query_params = array();
     $next_page_query_params = array();
 
+    if (!isset($_GET['order'])) {
+        http404('order parameter is required');
+    }
+
+    /*
+     * The order parameter allows the frontend to request ordering from the
+     * backend - something it couldn't do otherwise because of the limits
+     * imposed by pagination.
+     */
+
+    // The format of order is 'param dir', where 'param' could be 'date',
+    // 'committee', or 'cost' and order could be 'asc' or 'desc'
+    $order_param_dir = explode(' ', $_GET['order']);
+    if (count($order_param_dir) != 2) {
+        http404('order parameter is malformed');
+    }
+
+    $order_param = $order_param_dir[0];
+    $order_dir = $order_param_dir[1];
+
+    if (!in_array($order_param, array("date", "committee", "cost"))) {
+        http404('order must order by date, committee or cost');
+    }
+
+    if (!in_array($order_dir, array("asc", "desc"))) {
+        http404('order must order as asc or desc');
+    }
+
+    $LOGGER->debug('order = {order}', $_GET);
+
     // Load up all the URL parameters we care about, so that the ORM will 
     // consider them when we do our querying
     if (isset($_GET['start'])) {
@@ -104,7 +134,8 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     //
     // The drawback is that we throw away the final element; we can't include
     // it since we're bound to the configured PAGE_SIZE
-    $bills = Bill::from_query($db, $query_params, PAGE_SIZE + 1);
+    $bills = Bill::from_query($db, $order_param, $order_dir, $query_params, PAGE_SIZE + 1);
+    $bill_array = array();
     $response = array();
 
     // We need this to figure out where this page ends, so we can make a URL
@@ -115,16 +146,17 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     foreach ($bills as $bill) {
         // If this is the case, we're looking at our sentinel "+1 bill", which
         // we can't return
-        if (count($response) == PAGE_SIZE) {
+        if (count($bill_array) == PAGE_SIZE) {
             $generate_next_page = true;
             break;
         }
 
-        $response[$bill->get_id()] = $bill->to_array();
+        array_push($bill_array, $bill->to_array());
         $last_id = $bill->get_id();
     }
 
     $LOGGER->debug('Last ID was {last_id}', array('last_id' => $last_id));
+    $response['bills'] = $bill_array;
 
     // Generate the URL to the next page, for pagination purposes
     $next_page_query_params['start'] = $last_id;

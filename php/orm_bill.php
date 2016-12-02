@@ -114,11 +114,32 @@ class Bill {
      *           'committee' => STRING,
      *           'start' => INTEGER)
      */
-    public static function from_query($db, $url_params, $page_size=25) {
+    public static function from_query($db, $order_param, $order_dir, $url_params, $page_size=25) {
         global $LOGGER;
         $conditions = array();
         $params = array();
         $param_types = '';
+
+        $sql_order_col = null;
+        switch ($order_param) {
+        case 'date':
+            $sql_order_col = 'published';
+            break;
+        case 'committee':
+            $sql_order_col = 'committee';
+            break;
+        case 'cost':
+            $sql_order_col = '(SELECT SUM(amount) FROM Finances WHERE Finances.bill = Bills.id)';
+            break;
+        }
+
+        // Since these are already 'asc' and 'desc', we can keep these as is
+        $sql_order_dir = $order_dir;
+
+        $LOGGER->debug('Order info: {col}, {dir}', array(
+            'col' => $sql_order_col,
+            'dir' => $sql_order_dir
+        ));
 
         if (isset($url_params['start'])) {
             $start_ref = $url_params['start'];
@@ -170,14 +191,24 @@ class Bill {
         if (count($params) > 0) {
             $full_sql = fmt_string(
                 'SELECT id FROM Bills WHERE {conditions}
-                ORDER BY id DESC LIMIT {page_size}',
+                ORDER BY {order_col} {order_dir} LIMIT {page_size}',
                 array(
                     'conditions' => implode($conditions, ' AND '),
+                    'order_col' => $sql_order_col,
+                    'order_dir' => $sql_order_dir,
                     'page_size' => $page_size
                 )
             );
         } else {
-            $full_sql = 'SELECT id FROM Bills ORDER BY id DESC LIMIT ' . $page_size;
+            $full_sql = fmt_string(
+                'SELECT id FROM Bills
+                 ORDER BY {order_col} {order_dir} LIMIT {page_size}',
+                array(
+                    'order_col' => $sql_order_col,
+                    'order_dir' => $sql_order_dir,
+                    'page_size' => $page_size
+                )
+            );
         }
 
         $LOGGER->debug('Executing: {query}', array('query' => $full_sql));
