@@ -129,7 +129,7 @@ class Bill {
             $sql_order_col = 'committee';
             break;
         case 'net':
-            $sql_order_col = '(SELECT SUM(amount) FROM Finances WHERE Finances.bill = Bills.id)';
+            $sql_order_col = '(SELECT IFNULL(SUM(amount), 0) FROM Finances WHERE Finances.bill = Bills.id)';
             break;
         }
 
