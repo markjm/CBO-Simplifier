@@ -5,7 +5,6 @@ and the context around them.
 import datetime
 import dateutil.parser
 import re
-import sys
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
@@ -32,7 +31,7 @@ def compute_congress(bill_date):
 
     return (bill_date.year - 1789) // 2 + 1
 
-class BillInfo:
+class Bill:
     """
     A single CBO page on a particular bill.
     """
@@ -51,31 +50,54 @@ class BillInfo:
         self._process()
 
     def _process(self):
-        self.name = self.soup.h1.get_text()
+        try:
+            self.name = self.soup.h1.get_text()
+        except AttributeError: # get_text() not defined on None
+            self.name = None
 
         self.cost_suggestions = self._get_dollar_contexts()
-        pub_date_raw = self.soup.find(
-            'span',
-            {'class': 'date-display-single', 'property': 'dc:date'}
-        )['content']
 
-        self.pub_date = dateutil.parser.parse(pub_date_raw).date()
+        try:
+            pub_date_raw = self.soup.find(
+                'span',
+                {'class': 'date-display-single', 'property': 'dc:date'}
+            )['content']
 
-        request_committee_top = self.soup.find('div', {'class': 'summary'})
-        request_committee_text = request_committee_top.get_text()
+            self.pub_date = dateutil.parser.parse(pub_date_raw).date()
+        except (TypeError, ValueError):
+            # Either 'None is not subscriptable' or the date is ill formatted
+            self.pub_date = None
 
-        self.committee = COMMITTEE_NAME.search(request_committee_text).group(1)
-        request_date_raw = LONG_DATE.search(request_committee_text).group()
-        self.request_date = dateutil.parser.parse(request_date_raw).date()
+        try:
+            request_committee_top = self.soup.find('div', {'class': 'summary'})
+            request_committee_text = request_committee_top.get_text()
 
-        self.congress = compute_congress(self.request_date)
+            self.committee = COMMITTEE_NAME.search(request_committee_text).group(1)
+        except AttributeError:
+            # group() / get_text() are not defined on None
+            self.committee = None
+
+        try:
+            request_date_raw = LONG_DATE.search(request_committee_text).group()
+            self.request_date = dateutil.parser.parse(request_date_raw).date()
+        except (AttributeError, ValueError):
+            # Bad date, or else group() is not defined on None
+            self.request_date = None
+
+        if self.request_date is not None:
+            self.congress = compute_congress(self.request_date)
+        else:
+            self.congress = None
 
     def _get_dollar_contexts(self):
         """
         Returns a list of "word contexts" that surround likely cost contexts.
         """
         contexts = []
-        article_pars = self.soup.article.find_all('p')
+        try:
+            article_pars = self.soup.article.find_all('p')
+        except AttributeError:
+            article_pars = []
 
         for paragraph in article_pars:
             paragraph_text = paragraph.get_text()
@@ -84,22 +106,24 @@ class BillInfo:
 
         return contexts
 
-if len(sys.argv) == 1:
-    print(sys.argv[0], '<url>')
-    sys.exit(1)
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) == 1:
+        print(sys.argv[0], '<url>')
+        sys.exit(1)
 
-info = BillInfo(sys.argv[1])
-print('#', info.name)
+    info = Bill(sys.argv[1])
+    print('#', info.name)
 
-print('## Requested')
-print('On {} by the {} of the {} Congress'.format(
-            info.request_date,
-            info.committee, 
-            info.congress))
+    print('## Requested')
+    print('On {} by the {} of the {} Congress'.format(
+                info.request_date,
+                info.committee, 
+                info.congress))
 
-print('## Published')
-print(info.pub_date)
+    print('## Published')
+    print(info.pub_date)
 
-print('## Cost Suggestions')
-for sentence in info.cost_suggestions:
-    print(' -', sentence)
+    print('## Cost Suggestions')
+    for sentence in info.cost_suggestions:
+        print(' -', sentence)
