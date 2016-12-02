@@ -142,11 +142,9 @@ class Bill {
         ));
 
         if (isset($url_params['start'])) {
-            $start_ref = $url_params['start'];
-            array_push($conditions, 'id < ?');
-            $params[] =& $start_ref;
-            $param_types = 'i';
+            $offset = $url_params['start'];
         } else {
+            $offset = 0;
             $LOGGER->debug('Executing without "start" param');
         }
 
@@ -191,22 +189,26 @@ class Bill {
         if (count($params) > 0) {
             $full_sql = fmt_string(
                 'SELECT id FROM Bills WHERE {conditions}
-                ORDER BY {order_col} {order_dir} LIMIT {page_size}',
+                ORDER BY {order_col} {order_dir} 
+                LIMIT {page_size} OFFSET {offset}',
                 array(
                     'conditions' => implode($conditions, ' AND '),
                     'order_col' => $sql_order_col,
                     'order_dir' => $sql_order_dir,
-                    'page_size' => $page_size
+                    'page_size' => $page_size,
+                    'offset' => $offset
                 )
             );
         } else {
             $full_sql = fmt_string(
                 'SELECT id FROM Bills
-                 ORDER BY {order_col} {order_dir} LIMIT {page_size}',
+                 ORDER BY {order_col} {order_dir} 
+                 LIMIT {page_size} OFFSET {offset}',
                 array(
                     'order_col' => $sql_order_col,
                     'order_dir' => $sql_order_dir,
-                    'page_size' => $page_size
+                    'page_size' => $page_size,
+                    'offset' => $offset
                 )
             );
         }

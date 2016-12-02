@@ -90,6 +90,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     }
 
     $LOGGER->debug('order = {order}', $_GET);
+    $next_page_query_params['order'] = urlencode("$order_param $order_dir");
 
     // Load up all the URL parameters we care about, so that the ORM will 
     // consider them when we do our querying
@@ -99,6 +100,10 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         $query_params['start'] = force_int(
             $_GET['start'],
             'Starting row must be integer');
+
+        $current_offset = $query_params['start'];
+    } else {
+        $current_offset = 0;
     }
 
     if (isset($_GET['before'])) {
@@ -152,17 +157,18 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         }
 
         array_push($bill_array, $bill->to_array());
-        $last_id = $bill->get_id();
     }
 
     $LOGGER->debug('Last ID was {last_id}', array('last_id' => $last_id));
     $response['bills'] = $bill_array;
 
-    // Generate the URL to the next page, for pagination purposes
-    $next_page_query_params['start'] = $last_id;
+    // Generate the URL to the next page, for pagination purposes - it has to
+    // include not only the page offset, but also all the query parameters
+    $next_page_query_params['start'] = $current_offset + count($bill_array);
 
     if ($generate_next_page) {
         $response_params = array();
+
         foreach ($next_page_query_params as $key => $value) {
             array_push($response_params, $key . "=" . $value);
         }
