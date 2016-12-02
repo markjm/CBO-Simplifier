@@ -128,7 +128,7 @@ class Bill {
         case 'committee':
             $sql_order_col = 'committee';
             break;
-        case 'cost':
+        case 'net':
             $sql_order_col = '(SELECT SUM(amount) FROM Finances WHERE Finances.bill = Bills.id)';
             break;
         }

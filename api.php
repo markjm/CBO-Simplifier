@@ -72,7 +72,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
      */
 
     // The format of order is 'param dir', where 'param' could be 'date',
-    // 'committee', or 'cost' and order could be 'asc' or 'desc'
+    // 'committee', or 'net' and order could be 'asc' or 'desc'
     $order_param_dir = explode(' ', $_GET['order']);
     if (count($order_param_dir) != 2) {
         http404('order parameter is malformed');
@@ -81,7 +81,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $order_param = $order_param_dir[0];
     $order_dir = $order_param_dir[1];
 
-    if (!in_array($order_param, array("date", "committee", "cost"))) {
+    if (!in_array($order_param, array("date", "committee", "net"))) {
         http404('order must order by date, committee or cost');
     }
 
