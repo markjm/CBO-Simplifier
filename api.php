@@ -1,5 +1,8 @@
 <?php
+// This must be done before all others, since a couple of the modules
+// use configuration file values
 require_once 'php/config.php';
+
 require_once 'php/log.php';
 require_once 'php/orm_bill.php';
 require_once 'php/util.php';
@@ -40,10 +43,11 @@ $get_router = new Router();
 /*
  * API:
  *
- * GET /bills
+ * GET /bills?order=<KEY>+<DIR>&start=<INTEGER>&before=<UNIX-TIMESTAMP>&after=<UNIX-TIMESTAMP>&comittee=<NAME>
+ *    All but order are optional.
  *
  *     {
- *         INTEGER: {
+ *         'bills': [{
  *              'title': STRING,
  *              'code': STRING,
  *              'summary': STRING,
@@ -51,25 +55,25 @@ $get_router = new Router();
  *              'pdf_url': STRING,
  *              'financial': [
  *                   {'timespan': YEARS, 'amount': DOLLARS}
- *              ],
- *         'page': '/api.php/bills/'
+ *          }],
+ *         'next': '/api.php/bills?order=bills+desc&start=...&...'
  *     }
  *
- * GET /bills?start=<INTEGER>&before=<UNIX-TIMESTAMP>&after=<UNIX-TIMESTAMP>&comittee=<NAME>
+ * POST /update
  */
 $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $query_params = array();
     $next_page_query_params = array();
-
-    if (!isset($_GET['order'])) {
-        http404('order parameter is required');
-    }
 
     /*
      * The order parameter allows the frontend to request ordering from the
      * backend - something it couldn't do otherwise because of the limits
      * imposed by pagination.
      */
+
+    if (!isset($_GET['order'])) {
+        http404('order parameter is required');
+    }
 
     // The format of order is 'param dir', where 'param' could be 'date',
     // 'committee', or 'net' and order could be 'asc' or 'desc'
@@ -92,7 +96,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $LOGGER->debug('order = {order}', $_GET);
     $next_page_query_params['order'] = urlencode("$order_param $order_dir");
 
-    // Load up all the URL parameters we care about, so that the ORM will 
+    // Load up all the other URL parameters we care about, so that the ORM will 
     // consider them when we do our querying
     if (isset($_GET['start'])) {
         $LOGGER->debug('start = {start}', $_GET);
