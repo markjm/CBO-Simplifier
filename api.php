@@ -5,6 +5,7 @@ require_once 'php/config.php';
 
 require_once 'php/log.php';
 require_once 'php/orm_bill.php';
+require_once 'php/update_task.php';
 require_once 'php/util.php';
 
 $LOGGER = get_error_logger('api.php');
@@ -39,6 +40,7 @@ register_shutdown_function(function() {
 header('Cache-Control: no-cache');
 
 $get_router = new Router();
+$post_router = new Router();
 
 /*
  * API:
@@ -187,9 +189,22 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     send_json($response);
 });
 
+$post_router->attach('/update', function($vars) use (&$db, &$LOGGER) {
+    $LOGGER->debug('Checking on update task');
+
+    if (should_run_update_task($db)) {
+        run_update_task($db);
+    }
+});
+
 $ok = false;
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+switch ($_SERVER['REQUEST_METHOD']) {
+case 'GET':
     $ok = $get_router->invoke($_SERVER['PATH_INFO']);
+    break;
+case 'POST':
+    $ok = $post_router->invoke($_SERVER['PATH_INFO']);
+    break;
 }
 
 if (!$ok) {
