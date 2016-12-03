@@ -3,15 +3,16 @@ Scrapes the given CBO page, providing all the dollar figures found in the page
 and the context around them.
 """
 import datetime
-import dateutil.parser
 import re
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
+import dateutil.parser
 
 COST_CONTEXT = re.compile(r'(\w+\W){0,10}(\$[0-9,]+(\.[0-9]+)?)\W(billion|million|thousand)+\Wover\Wthe\W[0-9]+-[0-9]+\Wperiod')
 LONG_DATE = re.compile('(January|February|March|April|May|June|July|August|September|October|November|December) [0-9]{1,2}, [0-9]{4}')
 COMMITTEE_NAME = re.compile('by the (.+) on (January|February|March|April|May|June|July|August|September|October|November|December)')
+BILL_CODE = re.compile(r'(S\.|H\.R\.) [0-9]+')
 
 def split_sentences(text):
     """
@@ -37,12 +38,16 @@ class Bill:
     """
     def __init__(self, url):
         self.url = url
+        self.pdf = None
         self.name = None
+        self.code = None
+        self.summary = None
         self.cost_suggestions = []
         self.pub_date = None
         self.request_date = None
         self.committee = None
         self.congress = None
+        self.cost_suggestions = None
 
         with urlopen(url) as page:
             self.soup = BeautifulSoup(page.read(), 'html.parser')
@@ -50,10 +55,24 @@ class Bill:
         self._process()
 
     def _process(self):
+        # Note that this should not fail under normal circumstances - every
+        # page I've seen, even older ones, always have a PDF analysis linked
+        # on the page
+        self.pdf = self.soup.find('a', {'class': 'read-complete-document'})['href']
+
         try:
-            self.name = self.soup.h1.get_text()
+            code_name = self.soup.h1.get_text()
+            self.code = BILL_CODE.search(code_name).group()
+            self.name = code_name[len(self.code):].strip(', ')
         except AttributeError: # get_text() not defined on None
             self.name = None
+            self.code = None
+
+        try:
+            summary_par = self.soup.article.find('p')
+            self.summary = summary_par.get_text()
+        except AttributeError:
+            self.summary = None
 
         self.cost_suggestions = self._get_dollar_contexts()
 
