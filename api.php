@@ -190,7 +190,7 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         $response['next'] = null;
     }
 
-    if ($should_run_update_task($db)) {
+    if (should_run_update_task($db)) {
         $response['update'] = '/api.php/update';
     } else {
         $response['update'] = null;
