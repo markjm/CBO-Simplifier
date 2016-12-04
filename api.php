@@ -13,6 +13,9 @@ $LOGGER->set_level(ULOG_DEBUG);
 
 $LOGGER->debug('----- CONNECTION -----');
 
+// We use this during POST /update, to avoid race conditions with other requests
+$UPDATE_LOCK = new FileLock(LOCK_FILE);
+
 $db = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if (!$db) {
     header('HTTP/1.1 500 Cannot connect to database');
@@ -26,6 +29,9 @@ register_shutdown_function(function() {
 
     global $db;
     $db->close();
+
+    global $UPDATE_LOCK;
+    $UPDATE_LOCK->unlock();
 
     // A convenience - if we end up dying for some reason, make sure that the
     // browser gets a response even if we don't end up sending one
@@ -189,12 +195,18 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     send_json($response);
 });
 
-$post_router->attach('/update', function($vars) use (&$db, &$LOGGER) {
+$post_router->attach('/update', function($vars) use (&$db, &$LOGGER, &$UPDATE_LOCK) {
     $LOGGER->debug('Checking on update task');
+    if (!$UPDATE_LOCK->lock()) {
+        $LOGGER->debug('Locking failed, update in progress');
+        return;
+    }
 
     if (should_run_update_task($db)) {
         run_update_task($db);
     }
+
+    $UPDATE_LOCK->unlock();
 });
 
 $ok = false;
