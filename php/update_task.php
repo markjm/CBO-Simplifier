@@ -89,6 +89,7 @@ class FileLock {
      * with, to avoid stealing the lock from another process.
      */
     public function unlock() {
+        global $LOGGER;
         if (!$this->holding_lock) {
             $LOGGER->debug('(FileLock::unlock) Never took lock');
             return true;
