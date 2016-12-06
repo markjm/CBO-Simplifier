@@ -238,7 +238,7 @@ $get_router->attach('/bills/pending', function($vars) use (&$db, &$LOGGER) {
 
     if ($generate_next_page) {
         $response['next'] = fmt_string(
-            '/api.php/bills/pending?next={next}',
+            '/api.php/bills/pending?start={next}',
             array('next' => $current_offset + count($bill_array)));
     } else {
         $response['next'] = null;
