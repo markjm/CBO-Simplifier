@@ -205,7 +205,7 @@ class Router {
  * Returns a 404.with the given message.
  */
 function http404($msg) {
-    send_http(404, $msg);
+    send_http(404, $msg, true);
 }
 
 /*
