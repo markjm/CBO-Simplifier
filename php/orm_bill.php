@@ -272,6 +272,51 @@ class Bill {
     }
 
     /*
+     * Constructs a Bill from an array - the bill may be either pending or not-pending - this
+     * is detected on the basis of a 'financial' element.
+     */
+    public static function from_array($array) {
+        $id = null;
+        $title = $array['title'];
+        $summary = $array['summary'];
+        $committee = $array['committee'];
+        $cbo_url = $array['cbo_url'];
+        $pdf_url = $array['pdf_url'];
+        $published = $array['published'];
+        $code = $array['code'];
+        $is_pending = !isset($array['financial']);
+
+        if (!is_string($title)) return null;
+        if (!is_string($summary)) return null;
+        if (!is_string($committee)) return null;
+        if (!is_string($cbo_url)) return null;
+        if (!is_string($pdf_url)) return null;
+        if (strtotime($published) === false) return null;
+        if (!is_string($code)) return null;
+
+        $bill = new Bill($id,
+                         $title,
+                         $summary,
+                         $committee,
+                         $published,
+                         $code,
+                         $cbo_url,
+                         $pdf_url,
+                         $is_pending);
+
+        if (!$is_pending) {
+            foreach ($array['financial'] as $finance) {
+                $entry  = Finance::from_array($finance);
+                if ($entry === null) return null;
+
+                array_push($bill->finances, $entry);
+            }
+        }
+
+        return $bill;
+    }
+
+    /*
      * Converts this object into an array, suitable for emission as JSON.
      */
     public function to_array() {

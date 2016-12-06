@@ -49,6 +49,20 @@ class Finance {
     }
 
     /*
+     * Constructs a Finance object from an array.
+     */
+    public static function from_array($array) {
+        $id = null;
+        $timespan = $array['timespan'];
+        $amount = $array['amount'];
+
+        if (!is_int($timespan) || $timespan < 0) return null;
+        if (!is_int($amount)) return null;
+
+        return new Finance($id, $timespan, $amount);
+    }
+
+    /*
      * Converts this object into an array, suitable for emission as JSON.
      */
     public function to_array() {
