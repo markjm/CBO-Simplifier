@@ -67,14 +67,6 @@ $post_router = new Router();
  *         'next': '/api.php/bills?order=bills+desc&start=...&...',
  *         'update': '/api.php/update'
  *     }
- *
- * GET /bills/pending
- *    Returns a selection of bills which need reviewing, in the same format as
- *    GET /bills. Includes pagination, but no 'update' field. Note that these
- *    are implicitly ordered by ascending age, to ensure that outstanding bills
- *    are given first.
- *
- * POST /update
  */
 $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     $query_params = array();
@@ -205,6 +197,13 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     send_json($response);
 });
 
+/*
+ * GET /bills/pending
+ *    Returns a selection of bills which need reviewing, in the same format as
+ *    GET /bills. Includes pagination, but no 'update' field. Note that these
+ *    are implicitly ordered by ascending age, to ensure that outstanding bills
+ *    are given first.
+ */
 $get_router->attach('/bills/pending', function($vars) use (&$db, &$LOGGER) {
     if (isset($_GET['start'])) {
         $LOGGER->debug('start = {start}', $_GET);
@@ -248,6 +247,12 @@ $get_router->attach('/bills/pending', function($vars) use (&$db, &$LOGGER) {
     send_json($response);
 });
 
+/*
+ * POST /update
+ *
+ * This invokes the update script which pulls information from the CBO and adds
+ * to our PendingBills table.
+ */
 $post_router->attach('/update', function($vars) use (&$db, &$LOGGER, &$UPDATE_LOCK) {
     $LOGGER->debug('Checking on update task');
     if (!$UPDATE_LOCK->lock()) {

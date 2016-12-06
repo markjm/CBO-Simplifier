@@ -191,8 +191,16 @@ class Router {
  * Returns a 404.with the given message.
  */
 function http404($msg) {
-    header('HTTP/1.1 404 ' . $msg);
-    exit;
+    send_http(404, $msg);
+}
+
+/*
+ * Sends an HTTP error code, along with a message, then terminates the program
+ * if the $terminate argument is true.
+ */
+function send_http($code, $msg, $terminate) {
+    header("HTTP/1.1 $code $msg");
+    if ($terminate) exit;
 }
 
 /*
