@@ -63,6 +63,31 @@ class Finance {
     }
 
     /*
+     * Inserts this Finance entry into the database, if it isn't there already,
+     * and returns the ID that it was inserted under.
+     */
+    public function insert($db, $bill_id) {
+        if ($this->id !== null) return $this->id;
+
+        $stmt = $db->prepare('
+            INSERT INTO Finances(bill, timespan, amount)
+            VALUES (?, ?, ?)
+        ');
+
+        $stmt->bind_param(
+            'isd',
+            $bill_id,
+            $this->timespan,
+            $this->amount);
+
+        $stmt->execute();
+        $stmt->close();
+
+        $this->id = $db->insert_id;
+        return $this->id;
+    }
+
+    /*
      * Converts this object into an array, suitable for emission as JSON.
      */
     public function to_array() {

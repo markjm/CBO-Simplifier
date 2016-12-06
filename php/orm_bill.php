@@ -317,6 +317,60 @@ class Bill {
     }
 
     /*
+     * Inserts this Bill into the database, if it isn't there already, and
+     * returns the ID that it was inserted under. Also removes the
+     * corresponding pending Bill from the database, if there is one.
+     */
+    public function finalize($db, $remove_from_pending=true) {
+        global $LOGGER;
+
+        if ($this->id !== null) return $this->id;
+
+        // We have to do the insert on the Bill itself first, since its ID is
+        // required by the Finance entries
+        $LOGGER->debug('Adding bill to Bills table');
+        $stmt = $db->prepare('
+            INSERT INTO Bills(title, summary, committee, published, code, cbo_url, pdf_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+        ');
+
+        $stmt->bind_param(
+            'sssssss',
+            $this->title,
+            $this->summary,
+            $this->committee,
+            $this->published,
+            $this->code,
+            $this->cbo_link
+            $this->pdf_link);
+
+        $stmt->execute();
+        $stmt->close();
+
+        $LOGGER->debug('Loading bill finance info');
+        $bill_id = $db->insert_id;
+        foreach ($this->finances as $finance) {
+            $finance->insert($db, $bill_id);
+        }
+
+        $this->id = $bill_id;
+
+        // Now, clean up the PendingBills entry. Note that we can use the CBO
+        // URL here, since that is a UNIQUE constraint for Bills, both pending
+        // and normal
+        $LOGGER->debug('Removing bill from PendingBills table');
+        $stmt = $db->prepare('
+            DELETE FROM PendingBills WHERE cbo_url = ?
+        ');
+
+        $stmt->bind_param('s', $this->cbo_link);
+        $stmt->execute();
+        $stmt->close();
+
+        return $this->id;
+    }
+
+    /*
      * Converts this object into an array, suitable for emission as JSON.
      */
     public function to_array() {
