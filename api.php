@@ -248,6 +248,24 @@ $get_router->attach('/bills/pending', function($vars) use (&$db, &$LOGGER) {
 });
 
 /*
+ * POST /bills
+ *
+ * This takes the pending bill provided on the input stream, and makes a
+ * fully-fledged bill out of it.
+ */
+$post_router->attach('/bills', function($vars) use (&$db, &$LOGGER) {
+    $request = read_json();
+
+    $LOGGER->debug('Parsing bill into request');
+    $bill = Bill::from_array($request);
+
+    $LOGGER->debug('Writing pending bill to database');
+    $bill->finalize($db, true);
+
+    send_text('');
+});
+
+/*
  * POST /update
  *
  * This invokes the update script which pulls information from the CBO and adds

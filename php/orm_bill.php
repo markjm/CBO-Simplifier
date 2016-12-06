@@ -341,7 +341,7 @@ class Bill {
             $this->committee,
             $this->published,
             $this->code,
-            $this->cbo_link
+            $this->cbo_link,
             $this->pdf_link);
 
         $stmt->execute();

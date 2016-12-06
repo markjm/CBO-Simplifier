@@ -2,6 +2,20 @@
 $RESPONSE_SENT = false;
 
 /*
+ * Reads in JSON from the input stream, and returns it.
+ *
+ * If there is none, than an HTTP 400 is sent and the program is terminated.
+ */
+function read_json() {
+    $result = json_decode(file_get_contents('php://input'), true);
+    if ($result === null) {
+        send_http(400, "JSON input required", true);
+    }
+
+    return $result;
+}
+
+/*
  * Deep converts an array into UTF-8, to avoid encoding errors.
  *
  * http://stackoverflow.com/questions/10199017/how-to-solve-json-error-utf8-error-in-php-json-decode
