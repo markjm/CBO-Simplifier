@@ -157,7 +157,6 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
 
     // We need this to figure out where this page ends, so we can make a URL
     // for the next page
-    $last_id = null;
     $generate_next_page = false;
 
     foreach ($bills as $bill) {
@@ -171,7 +170,6 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
         array_push($bill_array, $bill->to_array());
     }
 
-    $LOGGER->debug('Last ID was {last_id}', array('last_id' => $last_id));
     $response['bills'] = $bill_array;
 
     // Generate the URL to the next page, for pagination purposes - it has to
