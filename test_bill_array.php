@@ -46,7 +46,7 @@ $pre_arr = array(
     'cbo_url' => 'http://example.com/cbo/cheese',
     'pdf_url' => 'http://example.com/cbo/cheese.pdf',
     'published' => '2016-12-25',
-    'financial' => array(
+    'finances' => array(
         array(
             'amount' => -5000,
             'timespan' => 1,

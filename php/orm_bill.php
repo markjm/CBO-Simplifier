@@ -273,7 +273,7 @@ class Bill {
 
     /*
      * Constructs a Bill from an array - the bill may be either pending or not-pending - this
-     * is detected on the basis of a 'financial' element.
+     * is detected on the basis of a 'finances' element.
      */
     public static function from_array($array) {
         $id = null;
@@ -284,7 +284,7 @@ class Bill {
         $pdf_url = $array['pdf_url'];
         $published = $array['published'];
         $code = $array['code'];
-        $is_pending = !isset($array['financial']);
+        $is_pending = !isset($array['finances']);
 
         if (!is_string($title)) return null;
         if (!is_string($summary)) return null;
@@ -305,7 +305,7 @@ class Bill {
                          $is_pending);
 
         if (!$is_pending) {
-            foreach ($array['financial'] as $finance) {
+            foreach ($array['finances'] as $finance) {
                 $entry  = Finance::from_array($finance);
                 if ($entry === null) return null;
 
