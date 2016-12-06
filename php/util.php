@@ -2,11 +2,33 @@
 $RESPONSE_SENT = false;
 
 /*
+ * Deep converts an array into UTF-8, to avoid encoding errors.
+ *
+ * http://stackoverflow.com/questions/10199017/how-to-solve-json-error-utf8-error-in-php-json-decode
+ */
+function utf8ize($mixed) {
+    if (is_array($mixed)) {
+        foreach ($mixed as $key => $value) {
+            $mixed[$key] = utf8ize($value);
+        }
+    } else if (is_string ($mixed)) {
+        return utf8_encode($mixed);
+    }
+    return $mixed;
+}
+
+/*
  * Writes JSON to the client, setting the Content-Type to applicatoin/json
  */
 function send_json($arr) {
     header('Content-Type: application/json');
-    echo json_encode($arr);
+
+    $result = json_encode($arr);
+    if ($result === false && json_last_error() === JSON_ERROR_UTF8) {
+        $result = json_encode(utf8ize($arr));
+    }
+
+    echo $result;
 
     global $RESPONSE_SENT;
     $RESPONSE_SENT = true;

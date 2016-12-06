@@ -64,8 +64,15 @@ $post_router = new Router();
  *              'financial': [
  *                   {'timespan': YEARS, 'amount': DOLLARS}
  *          }],
- *         'next': '/api.php/bills?order=bills+desc&start=...&...'
+ *         'next': '/api.php/bills?order=bills+desc&start=...&...',
+ *         'update': '/api.php/update'
  *     }
+ *
+ * GET /bills/pending
+ *    Returns a selection of bills which need reviewing, in the same format as
+ *    GET /bills. Includes pagination, but no 'update' field. Note that these
+ *    are implicitly ordered by ascending age, to ensure that outstanding bills
+ *    are given first.
  *
  * POST /update
  */
@@ -195,7 +202,49 @@ $get_router->attach('/bills', function($vars) use (&$LOGGER, &$db) {
     }
 
     $LOGGER->debug('Next page URL: {next_url}', array('next_url' => $response['next']));
+    send_json($response);
+});
 
+$get_router->attach('/bills/pending', function($vars) use (&$db, &$LOGGER) {
+    if (isset($_GET['start'])) {
+        $LOGGER->debug('start = {start}', $_GET);
+
+        $current_offset = force_int(
+            $_GET['start'],
+            'Starting row must be integer');
+    } else {
+        $current_offset = 0;
+    }
+
+    $LOGGER->debug('Pulling pending bills');
+
+    $bills = Bill::from_pending($db, $current_offset, PAGE_SIZE + 1);
+    $bill_array = array();
+    $response = array();
+
+    $generate_next_page = false;
+    foreach ($bills as $bill) {
+        // If this is the case, we're looking at our sentinel "+1 bill", which
+        // we can't return
+        if (count($bill_array) == PAGE_SIZE) {
+            $generate_next_page = true;
+            break;
+        }
+
+        array_push($bill_array, $bill->to_array());
+    }
+
+    $response['bills'] = $bill_array;
+
+    if ($generate_next_page) {
+        $response['next'] = fmt_string(
+            '/api.php/bills/pending?next={next}',
+            array('next' => $current_offset + count($bill_array)));
+    } else {
+        $response['next'] = null;
+    }
+
+    $LOGGER->debug('Next page URL: {next_url}', array('next_url' => $response['next']));
     send_json($response);
 });
 
