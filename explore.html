@@ -11,22 +11,35 @@
     <link href="css/bootstrap-flatly.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <style>
-    .affix {
-        top: 0;
-        width: 100%;
-        z-index: 10000;
-     }
-
-    .affix + .container-fluid {
-        padding-top: 70px;
+    <link href="css/customcss.css" rel="stylesheet">
+    <style type="text/css">
+    .form-group {
+        background: WhiteSmoke;
     }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-inverse" data-spy="affix" data-offset-top="0">
+    <div id="fb-root"></div>
+    <script>
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <script type="text/javascript">
+    var apiurl = 'http://wwwp.cs.unc.edu/~camarche/426';
+    var apiappend = '/api.php/bills?order=date+desc';
+    var editable = false;
+    </script>
+
+    <nav class="navbar navbar-default" data-spy="affix" data-offset-top="71" data-offset-bottom="300">
         <div class="container-fluid">
             <ul class="nav navbar-nav">
                 <li><a class="navbar-brand" href="index.html">Home</a></li>
@@ -37,83 +50,47 @@
         </div>
     </nav>
 
-    <div class="container-fluid text-center">
+    <div class="container-fluid">
         <div class="row content">
-            <div class="col-md-4">
-                <div class="panel">
-                    <form class="form-horizontal">
-                        <div class="form-group">
-                            <label for="bill-origin">Bill Origin</label>
-                            <select id="bill-origin">
-                                <option value="none">No Filter</option>
-                                <option value="house">House</option>
-                                <option value="senate">Senate</option>
-                            </select>
+            <div id="sorts" class="col-md-4 text-center" data-spy="">
+                <form class="form-horizontal">
+                    <div class="panel form-group">
+                        <label class="pull-left">Date</label>
+                        <div class="btn-group pull-right">
+                            <button id="date+desc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+                            </button>
+                            <button id="date+asc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+                            </button>
                         </div>
-
-                        <div class="form-group">
-                            <label for="bill-balance">Bill Effect</label>
-                            <select id="bill-balance">
-                                <option value="none">No Filter</option>
-                                <option value="deficit">Deficit (Cost &gt; Revenue)</option>
-                                <option value="neutral">Neutral (Cost = Revenue)</option>
-                                <option value="surplus">Surplus (Cost &lt; Revenue)</option>
-                            </select>
+                    </div>
+                    <div class="panel form-group">
+                        <label class="pull-left">Committee</label>
+                        <div class="btn-group pull-right">
+                            <button id="committee+asc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+                            </button>
+                            <button id="committee+desc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+                            </button>
                         </div>
-                    </form>
-
-                    <button id="apply-filter" class="btn btn-primary btn-block">Apply Filter</button>
-                </div>
+                    </div>
+                    <div class="panel form-group">
+                        <label class="pull-left">Net Cost</label>
+                        <div class="btn-group pull-right">
+                            <button id="net+asc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+                            </button>
+                            <button id="net+desc" type="button" class="btn btn-default" aria-label="Left Align">
+                                <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <button id="apply-filter" class="btn btn-primary btn-block">Apply Sort</button>
             </div>
-            <div class="col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Military Residency Choice Act</h3>
-                    </div>
-                    <div class="panel-body row">
-                        <div class="col-md-4">
-                            <a href="https://www.cbo.gov/publication/52135">H.R. 5248</a>
-                        </div>
-                        <div class="col-md-4 text-success">
-                            $0
-                        </div>
-                        <div class="col-md-4 text-danger">
-                            $0
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">ADA Education and Reform Act of 2016</h3>
-                    </div>
-                    <div class="panel-body row">
-                        <div class="col-md-4">
-                            <a href="https://www.cbo.gov/publication/52131">H.R. 3765</a>
-                        </div>
-                        <div class="col-md-4 text-success">
-                            $0
-                        </div>
-                        <div class="col-md-4 text-danger">
-                            $15 million over 5 yrs.
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Postal Service Financial Improvement Act of 2016</h3>
-                    </div>
-                    <div class="panel-body row">
-                        <div class="col-md-4">
-                            <a href="https://www.cbo.gov/publication/52130">H.R. 5707</a>
-                        </div>
-                        <div class="col-md-4 text-success">
-                            $0
-                        </div>
-                        <div class="col-md-4 text-danger">
-                            $4.4 billion over 10 yrs.
-                        </div>
-                    </div>
-                </div>
+            <div id="info" class="col-md-8">
             </div>
         </div>
     </div>
@@ -121,6 +98,30 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/retrieval.js"></script>
+
+
+
+    <script type="text/javascript">
+    var buttons = $(".btn-default");
+    var last = null;
+    buttons.click(function() {
+        if (last) {
+            last.toggleClass("btn-default btn-success");
+        }
+        $(this).toggleClass("btn-default btn-success");
+        last = $(this);
+    });
+
+    var filter = $("#apply-filter");
+    filter.click(function() {
+        var selected = $(".btn-success").attr('id');
+        apiappend = '/api.php/bills?order=' + selected;
+        var list = $('#info');
+        list.empty();
+        loadPage();
+    });
+    </script>
 </body>
 
 </html>

@@ -11,104 +11,104 @@
     <link href="css/bootstrap-flatly.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <style>
-    .affix {
-        top: 0;
-        width: 100%;
-        z-index: 10000;
-     }
-
-    .affix + .container-fluid {
-        padding-top: 70px;
-    }
-    </style>
+    <link href="css/customcss.css" rel="stylesheet">
 </head>
 
 <body>
+    <div id="fb-root"></div>
+    <script>
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
 
-    <nav class="navbar navbar-inverse" data-spy="affix" data-offset-top="0">
+    <script type="text/javascript">
+    var apiurl = 'http://wwwp.cs.unc.edu/~camarche/426';
+    var apiappend = '/api.php/bills/pending';
+    </script>
+
+    <nav class="navbar navbar-default" data-spy="affix" data-offset-top="71" data-offset-bottom="300">
         <div class="container-fluid">
             <ul class="nav navbar-nav">
-                <li><a class="navbar-brand" href="index.html">Home</a></li>
+                <li class="active"><a class="navbar-brand" href="index.html">Home</a></li>
                 <li><a href="explore.html">Explore</a></li>
                 <li><a href="about.html">About</a></li>
-                <li class="active"><a href="contribute.html">Contribute</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
             </ul>
         </div>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid text-center">
         <div class="row content">
-            <div class="col-md-2"></div>
-
-            <div class="col-md-8">
-                <h1> Currently Open Bills </h1>
-                <p>
-                    These are the bills that the CBO has published, but which we
-                    don't have cost summaries for. Select one of the below to get
-                    started!
-                </p>
-
-                <form>
-                    <select id="contrib-bill">
-                        <option value="1">
-                            <a href="https://www.cbo.gov/publication/52148">S. 3084, American Innovation and Competitiveness Act</a>
-                        </option>
-                        <option value="2" selected>
-                            <a href="https://www.cbo.gov/publication/52146">H.R. 5984, Pechanga Band of Luiseno Mission Indians Water Rights Settlement Act</a>
-                        </option>
-                    </select>
-
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h2>Income</h2>
-                                <ul>
-                                    <li>$0</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h2>Spending</h2>
-                                <ul>
-                                    <li>$16.1 billion over 5 years</li>
-                                    <li>$0.9 billion after 5 years</li>
-                                    <li>$25 million over 10 years</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group text-center">
-                        <label for="contrib-income">Income Amount And Timespan:</label>
-                        <input type="text">
-                    </div>
-
-                    <div class="form-group text-center">
-                        <button id="contrib-add-income" class="btn btn-default">Record Income</button>
-                    </div>
-
-                    <div class="form-group text-center">
-                        <label for="contrib-spending">Spending Amount And Timespan:</label>
-                        <input type="text">
-                    </div>
-
-                    <div class="form-group text-center">
-                        <button id="contrib-add-spending" class="btn btn-default">Record Spending</button>
-                    </div>
-
-                    <div class="form-group text-center">
-                        <button id="contrib-submit" class="btn btn-primary btn-block"> Submit Cost Description </button>
-                    </div>
-                </form>
+            <div class="col-sm-2 sidenav">
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
             </div>
 
-            <div class="col-md-2"></div>
+
+            <div id="info" , class="col-sm-8 text-left">
+                <div class="page-header">
+                    <h1>Contibute</h1>
+                    <p>We scrape information directly from CBO.gov. Unfortunately, they have chosen not to maintain uniform summary pages.</p> 
+                    <p>We need your help making sure our data is correct! Below are all of the bills that have not been reviewed by anyone yet. Click on objects within each bill to edit them. When everything looks good, click <span class="text-info">Submit</span>. Our mission is to keep the public informed, so please make sure submissions are accurate!</p>
+                    <p>All of the necessary information can be found within the PDF</p>
+                    <div class="text-center text-muted"> Scroll to view new bills</div>
+                    <div id="firstCall" style="hidden"></div>
+                </div>
+            </div>
+            <div class="col-sm-2 sidenav">
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+                <div class="well">
+                    <p>ADS</p>
+                </div>
+            </div>
         </div>
     </div>
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    var editable = true;
+    </script>
+    <script src="js/retrieval.js"></script>
+
 </body>
 
 </html>
