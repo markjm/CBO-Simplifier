@@ -1,0 +1,13 @@
+    .affix {
+        top: 0;
+        width: 100%;
+        z-index: 10000;
+    }
+    
+    .affix + .container-fluid {
+        padding-top: 70px;
+    }
+
+    body {
+        background: WhiteSmoke;
+    }
